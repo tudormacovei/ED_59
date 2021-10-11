@@ -1,14 +1,12 @@
 #include <ESP8266WiFi.h>
 
-// Initialize sensor parameters
 bool isMotion = false;
 
-// Initialize network parameters
-const char *ssid = "ANY_SSID";
-const char *password = "ANY_PASSWORD";
-const char* host = "192.168.11.4"; // as specified in server.ino
+// Information for accessing the server
+const char *ssid = "ED_59";
+const char *password = "ED_59_ADMIN";
+const char *host = "192.168.11.4"; // IP address of server
 
-// Set up the client objet
 WiFiClient client;
 
 void setup()

@@ -1,17 +1,16 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-// Configuration parameters for Access Point
-char * ssid_ap = "ANY_SSID";
-char * password_ap = "ANY_PASSWORD";
-IPAddress ip(192,168,11,4); // arbitrary IP address (doesn't conflict w/ local network)
+// Configuration parameters for server ("base station")
+char *ssid_ap = "ED_59";
+char *password_ap = "ED_59_ADMIN";
+IPAddress ip(192,168,11,4); // arbitrary IP address 
 IPAddress gateway(192,168,11,1);
 IPAddress subnet(255,255,255,0);
 
-// Set up the server object
 ESP8266WebServer server;
 
-// Keep track of the sensor data that's going to be sent by the client
+// Sensor data that's going to be recieved
 float sensor_value = 0.0;
 
 void setup() {
@@ -32,6 +31,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   server.handleClient();
+  // turn the LED on the board on if motion is detected by client
   if (sensor_value > 0.5) {
     digitalWrite(D0, LOW);
   } else {
@@ -41,7 +41,7 @@ void loop() {
 }
 
 void handleIndex() {
-  server.send(200,"text/plain",String(sensor_value)); // we'll need to refresh the page for getting the latest value
+  server.send(200,"text/plain",String(sensor_value)); // refresh the page for getting the latest value (for debugging purposes)
 }
 
 void handleUpdate() {
