@@ -1,5 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <Servo.h>
+
+Servo cold, hot;
+const int servoCold = 14; // D5 pin
+//const int servoHot = 2;
 
 // Configuration parameters for server ("base station")
 char *ssid_ap = "ED_59";
@@ -26,6 +31,9 @@ void setup() {
   server.on("/",handleIndex); // use the top root path to report the last sensor value
   server.on("/update",handleUpdate); // use this route to update the sensor value
   server.begin();
+
+  cold.attach(servoCold);
+  hot.attach(servoHot);
 }
 
 void loop() {
@@ -34,8 +42,19 @@ void loop() {
   // turn the LED on the board on if motion is detected by client
   if (sensor_value > 0.5) {
     digitalWrite(D0, LOW);
+    for (int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
+      // in steps of 1 degree
+      cold.write(pos);              // tell servo to turn 'pos' degrees (I think)
+      
+      delay(10);                       // waits 15ms for the servo to reach the position
+    }
   } else {
+    for (int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
+      cold.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(10);                       // waits 15ms for the servo to reach the position
+    }
     digitalWrite(D0, HIGH);
+    
   }
   delay(50);
 }
