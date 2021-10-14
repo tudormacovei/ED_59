@@ -16,7 +16,10 @@ IPAddress subnet(255,255,255,0);
 ESP8266WebServer server;
 
 // Sensor data that's going to be recieved
-float sensor_value = 0.0;
+float motion_value = 0.0;
+
+// define pinouts
+const int led_board = 16; // D0 pin
 
 void setup() {
   pinMode(D0, OUTPUT);  // LED On the board
@@ -27,45 +30,55 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
   Serial.print("IP Address: "); Serial.println(WiFi.softAPIP());
+  
   // Configure the server's routes
   server.on("/",handleIndex); // use the top root path to report the last sensor value
   server.on("/update",handleUpdate); // use this route to update the sensor value
   server.begin();
 
   cold.attach(servoCold);
-  hot.attach(servoHot);
+//  hot.attach(servoHot);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   server.handleClient();
   // turn the LED on the board on if motion is detected by client
-  if (sensor_value > 0.5) {
+  if (motion_value > 0.5) {
     digitalWrite(D0, LOW);
-    for (int pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-      // in steps of 1 degree
-      cold.write(pos);              // tell servo to turn 'pos' degrees (I think)
-      
-      delay(10);                       // waits 15ms for the servo to reach the position
-    }
+//    hot_open();
+    cold_open();
   } else {
-    for (int pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-      cold.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(10);                       // waits 15ms for the servo to reach the position
-    }
+    cold_close();
     digitalWrite(D0, HIGH);
-    
   }
-  delay(50);
 }
 
+// these functions are causing a lot of issues, must fix since they take way too long
+void cold_open() {
+    for (int pos = 0; pos <= 180; pos += 1) {
+      // goes from 0 degrees to 180 degrees in steps of 1 degree
+      cold.write(pos);                 // tell servo to turn 'pos' degrees (I think)
+      delay(15);                       // waits 15ms for the servo to reach the position
+    }
+}
+
+void cold_close() {
+    for (int pos = 0; pos <= 180; pos += 1) {
+      // goes from 0 degrees to 180 degrees in steps of 1 degree
+      cold.write(-pos);                 // tell servo to turn 'pos' degrees (I think)
+      delay(15);                       // waits 15ms for the servo to reach the position
+    }
+}
+
+// debugging purposes
 void handleIndex() {
-  server.send(200,"text/plain",String(sensor_value)); // refresh the page for getting the latest value (for debugging purposes)
+  server.send(200,"text/plain",String(motion_value)); // refresh the page for getting the latest value (for debugging purposes)
 }
 
 void handleUpdate() {
   // The value will be passed as a URL argument
-  sensor_value = server.arg("value").toFloat();
-  Serial.println(sensor_value);
+  motion_value = server.arg("value").toFloat();
+  Serial.println(motion_value);
   server.send(200,"text/plain","Updated");
 }
