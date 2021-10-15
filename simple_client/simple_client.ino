@@ -10,6 +10,7 @@ const char *host = "192.168.11.4"; // IP address of server
 // define input/output ports 
 const int led_board = 16;     // D0 pin
 const int led_external_1 = 0; // D3 pin
+const int led_external_2 = 4; // D2 pin
 const int motion_sensor = 14;  // D5 pin (D4 pin is not working for some reason)
 
 unsigned long last_movement;
@@ -22,7 +23,9 @@ void setup()
 {
   pinMode(led_board, OUTPUT);  // LED On the board
   pinMode(motion_sensor, INPUT);   // PIR motion sensor
-  pinMode(D3, OUTPUT);
+  pinMode(led_external_1, OUTPUT);
+  pinMode(led_external_2, OUTPUT);
+  
 //  pinMode(D6, INPUT);   // Temp Sensor input
   Serial.begin(115200);
 
@@ -47,13 +50,19 @@ void loop()
     last_movement = millis();
   }
   if (millis() - last_movement > 5000) {
-    digitalWrite(led_external_1, HIGH);
-  } else {
     digitalWrite(led_external_1, LOW);
+    if (millis() - last_movement < 15000) {
+      digitalWrite(led_external_2, HIGH);  
+    } else {
+      digitalWrite(led_external_2, LOW);  
+    }
+  } else {
+    digitalWrite(led_external_1, HIGH);
+    digitalWrite(led_external_2, LOW);  
   }
   // Connect to the server and send the data as a URL parameter
   contact_server();
-  delay(50);
+  delay(30);
   digitalWrite(led_board, HIGH);
 }
 
