@@ -1,4 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 bool isMotion = false;
 
@@ -12,24 +14,18 @@ const int led_board = 16;     // D0 pin
 const int led_external_1 = 0; // D3 pin
 const int led_external_2 = 4; // D2 pin
 const int motion_sensor = 14;  // D5 pin (D4 pin is not working for some reason)
+const int temp_sensor = 5;    // D1 pin
 
 unsigned long last_movement;
 
 WiFiClient client;
+OneWire oneWire(temp_sensor);
+
+DallasTemperature sensors(&oneWire);
 
 void contact_server();
 
-void setup()
-{
-  pinMode(led_board, OUTPUT);  // LED On the board
-  pinMode(motion_sensor, INPUT);   // PIR motion sensor
-  pinMode(led_external_1, OUTPUT);
-  pinMode(led_external_2, OUTPUT);
-  
-//  pinMode(D6, INPUT);   // Temp Sensor input
-  Serial.begin(115200);
-
-  // Connect to the server
+void server_connect() {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -39,6 +35,23 @@ void setup()
   Serial.println();
   Serial.print("IP Address (AP): ");
   Serial.println(WiFi.localIP());
+}
+
+void setup()
+{
+  pinMode(led_board, OUTPUT);  // LED On the board
+  pinMode(motion_sensor, INPUT);   // PIR motion sensor
+  pinMode(led_external_1, OUTPUT);
+  pinMode(led_external_2, OUTPUT);
+  pinMode(temp_sensor, INPUT);
+  
+//  pinMode(D6, INPUT);   // Temp Sensor input
+  Serial.begin(115200);
+
+  // Connect to the server
+//  server_connect();
+
+  sensors.begin();
 }
 
 void loop()
@@ -61,6 +74,11 @@ void loop()
     digitalWrite(led_external_2, LOW);  
   }
   // Connect to the server and send the data as a URL parameter
+  
+  sensors.requestTemperatures();                // Send the command to get temperatures  
+  Serial.println("Temperature is: ");
+  Serial.println(sensors.getTempCByIndex(0));   // Why "byIndex"? You can have more than one IC on the same bus. 0 refers to the first IC on the wire
+  
   contact_server();
   delay(30);
   digitalWrite(led_board, HIGH);
