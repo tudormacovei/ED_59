@@ -22,6 +22,7 @@ const int motion_sensor = 14; // D5 pin (D4 pin is not working for some reason)
 const int temp_sensor = 5;    // D1 pin
 const int buzzer = 12;        // D6 pin
 
+int refresh = 10;
 unsigned long last_movement;
 
 WiFiClient client;
@@ -51,6 +52,7 @@ void setup()
   pinMode(buzzer, OUTPUT);
 
   server_connect();
+  client.connect(host, 80);
   sensors.begin();
 }
 
@@ -103,7 +105,7 @@ void control_led() {
 }
 
 void contact_server() {
-  if (client.connect(host, 80))
+  if (refresh > 0 || client.connect(host, 80))
   {
     String url = "/update?value=";
     if (!isMotion && millis() - last_movement > 20000) {
@@ -122,13 +124,17 @@ void contact_server() {
         Serial.println("OPEN");
       }
     }
+    refresh--;
+    if (refresh < 0) {
+      refresh = 10;
+    }
     client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" +
                  "Connection: keep-alive\r\n\r\n"); // minimum set of required URL headers
-    delay(20);
-    // Read all the lines of the response
-    while (client.available())
-    {
-      String line = client.readStringUntil('\r');
-    }
+//    delay(20);
+//    // Read all the lines of the response
+//    while (client.available())
+//    {
+//      String line = client.readStringUntil('\r');
+//    }
   }
 }
