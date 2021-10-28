@@ -2,8 +2,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#define MAX_TEMP 29.0
-// 29.0 is for testing purposes, should be switched in the final version
+#define MAX_TEMP 40.0
 
 // sensor variables
 bool isMotion = false;
@@ -16,11 +15,11 @@ const char *host = "192.168.11.4"; // IP address of server
 
 // define input/output ports 
 const int led_board = 16;     // D0 pin
-const int led_external_1 = 0; // D3 pin
-const int led_external_2 = 4; // D2 pin
+const int led_external_1 = 12; // D6 pin (green)
+const int led_external_2 = 4; // D2 pin (red)
 const int motion_sensor = 14; // D5 pin (D4 pin is not working for some reason)
 const int temp_sensor = 5;    // D1 pin
-const int buzzer = 12;        // D6 pin
+const int buzzer = 0;        // D3 pin
 
 int refresh = 10;
 unsigned long last_movement;
@@ -91,16 +90,21 @@ void debug_led() {
 }
 
 void control_led() {
-  if (millis() - last_movement > 10000) {
-    digitalWrite(led_external_1, LOW);
-  if (millis() - last_movement < 15000) {
-      digitalWrite(led_external_2, HIGH);  
+  if (temperature > MAX_TEMP) {
+    digitalWrite(led_external_2, HIGH);
+  } else {
+    if (millis() - last_movement > 10000) {
+      digitalWrite(led_external_1, LOW);
+      if (millis() - last_movement < 15000) {
+        digitalWrite(led_external_2, HIGH);  
+      } else {
+        digitalWrite(led_external_2, LOW);  
+      }
     } else {
+      digitalWrite(led_external_1, HIGH);
       digitalWrite(led_external_2, LOW);  
     }
-  } else {
-    digitalWrite(led_external_1, HIGH);
-    digitalWrite(led_external_2, LOW);  
+    digitalWrite(led_external_2, LOW);
   }
 }
 
@@ -108,7 +112,7 @@ void contact_server() {
   if (refresh > 0 || client.connect(host, 80))
   {
     String url = "/update?value=";
-    if (!isMotion && millis() - last_movement > 20000) {
+    if (!isMotion && millis() - last_movement > 15000) {
       // close servos / keep closed
       url += "0.0";
       Serial.println("CLOSE");

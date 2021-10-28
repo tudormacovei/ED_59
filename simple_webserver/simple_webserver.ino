@@ -3,9 +3,10 @@
 #include <Servo.h>
 
 // NOTE: CLOCKWISE = OPEN, ANTI = CLOSE
-#define SPEED_CLOCKWISE 20
-#define SPEED_ANTICLOCK 160
+#define SPEED_CLOCKWISE 40
+#define SPEED_ANTICLOCK 140
 #define SPEED_STOP 90
+#define TIME_RUN 1200
 
 Servo cold, hot;
 
@@ -35,7 +36,7 @@ const int servoHot = 0;   // D3 pin
 
 void setup()
 {
-//  pinMode(led_board, OUTPUT);
+  pinMode(led_board, OUTPUT);
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(ip, gateway, subnet);
   WiFi.softAP(ssid_ap, password_ap);
@@ -85,7 +86,7 @@ void servo_control() {
 void cold_open()
 {
   cold.write(SPEED_CLOCKWISE);
-  delay(900);
+  delay(TIME_RUN);
   cold.write(SPEED_STOP);
   delay(100);
 }
@@ -93,7 +94,7 @@ void cold_open()
 void cold_close()
 {
   cold.write(SPEED_ANTICLOCK);
-  delay(900);
+  delay(TIME_RUN);
   cold.write(SPEED_STOP);
   delay(100);
 }
@@ -101,7 +102,7 @@ void cold_close()
 void hot_open()
 {
   hot.write(SPEED_CLOCKWISE);
-  delay(900);
+  delay(TIME_RUN);
   hot.write(SPEED_STOP);
   delay(100);
 }
@@ -109,7 +110,7 @@ void hot_open()
 void hot_close()
 {
   hot.write(SPEED_ANTICLOCK);
-  delay(900);
+  delay(TIME_RUN);
   hot.write(SPEED_STOP);
   delay(100);
 }
